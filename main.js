@@ -47,6 +47,24 @@ app.get('/', (req, res) => {
 	res.send(db.users);
 })
 
+//SIGN IN ROUTE
+app.post('/signin', (req, res) => {
+	const { email, password } = req.body;
+	let foundUser = false;
+
+	db.users.map((user) => {
+		if(user.email === email && user.password === password) {
+			foundUser = true;
+			res.status(200).json(user);
+		}
+	})
+
+	if(!foundUser) {
+		res.status(400).json('User not found!');
+	}
+	
+})
+
 
 
 app.listen(PORT, () => {
