@@ -47,7 +47,7 @@ app.get('/', (req, res) => {
 	res.send(db.users);
 })
 
-//SIGN IN ROUTE
+//USER SIGN IN ROUTE
 app.post('/signin', (req, res) => {
 	const { email, password } = req.body;
 	let foundUser = false;
@@ -62,8 +62,39 @@ app.post('/signin', (req, res) => {
 	if(!foundUser) {
 		res.status(400).json('User not found!');
 	}
-	
 })
+
+//REGISTER USER ROUTE
+app.post('/register', (req, res) => {
+	const { name, email, password } = req.body;
+	let userExist = false;
+	let newUser;
+
+	db.users.map((user) => {
+		if(user.email === email) {
+			userExist = true;
+			res.status(404).json('User already exists!')
+		}
+	})
+
+	if(!userExist) {
+		newUser = {
+			id: db.users.length + 1,
+			name: name,
+			email: email,
+			password: password,
+			entries: 0,
+			followers: [],
+			joined: new Date(),
+		}
+
+		db.users.push(newUser);
+		
+		res.send(newUser)
+	}
+})
+
+//UPDATE USER DETAILS
 
 
 
