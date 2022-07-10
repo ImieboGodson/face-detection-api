@@ -78,7 +78,8 @@ app.post('/register', (req, res) => {
 	})
 
 	if(!userExist) {
-		newUser = {
+	
+		db.users.push({
 			id: db.users.length + 1,
 			name: name,
 			email: email,
@@ -86,15 +87,32 @@ app.post('/register', (req, res) => {
 			entries: 0,
 			followers: [],
 			joined: new Date(),
-		}
+		});
 
-		db.users.push(newUser);
-		
+		newUser = db.users[db.users.length - 1]
+
 		res.send(newUser)
 	}
 })
 
-//UPDATE USER DETAILS
+
+//UPDATE USER ENTRIES
+app.put('/entries', (req, res) => {
+	const { id } = req.body;
+	let foundUser = false;
+
+	db.users.map((user) => {
+		if(user.id === id) {
+			foundUser = true;
+			user.entries += 1;
+			res.send(user);
+		}
+	})
+
+	if(!foundUser) {
+		res.status(404).json('Unauthorized Update!');
+	}
+})
 
 
 
