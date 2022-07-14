@@ -8,7 +8,7 @@ const PORT = 3001;
 const db = {
 	users: [
 		{
-			id: 001,
+			id: "1",
 			name: 'Jefferson Grey',
 			email: 'jeff@sample.com',
 			password: 'beans',
@@ -17,7 +17,7 @@ const db = {
 			joined: new Date(),
 		},
 		{
-			id: 002,
+			id: '2',
 			name: 'Adewale James',
 			email: 'adewale@sample.com',
 			password: 'rice',
@@ -26,7 +26,7 @@ const db = {
 			joined: new Date(),
 		},
 		{
-			id: 003,
+			id: '3',
 			name: 'Kaleb Jones',
 			email: 'jones@sample.com',
 			password: 'cats',
@@ -111,6 +111,23 @@ app.put('/entries', (req, res) => {
 
 	if(!foundUser) {
 		res.status(404).json('Unauthorized Update!');
+	}
+})
+
+
+app.get('/profile/:id', (req, res) => {
+	const { id } = req.params;
+	let foundUser = false;
+
+	db.users.map((user) => {
+		if(user.id === id) {
+			foundUser = true;
+			res.send(user);
+		}
+	})
+
+	if(!foundUser) {
+		res.status(400).json('user not found!');
 	}
 })
 
