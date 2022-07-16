@@ -1,5 +1,20 @@
 const express = require('express');
 const cors = require('cors');
+const knex = require('knex');
+const dotenv = require('dotenv').config();
+
+
+
+const database = knex({
+	client: 'pg',
+	connection: {
+		host : '127.0.0.1',
+		port : process.env.POSTGRES_DB_PORT,
+		user : process.env.POSTGRES_USER,
+		password : process.env.POSTGRES_PASSWORD,
+		database : process.env.POSTGRES_DB
+	}
+  });
 
 const app = express();
 
