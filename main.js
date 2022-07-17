@@ -1,24 +1,24 @@
 const express = require('express');
 const cors = require('cors');
-const knex = require('knex');
+const bcrypt = require('bcrypt');
 const dotenv = require('dotenv').config();
 
+const { POSTGRES_DB_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB } = process.env;
 
-
-const database = knex({
+const knex = require('knex')({
 	client: 'pg',
 	connection: {
 		host : '127.0.0.1',
-		port : process.env.POSTGRES_DB_PORT,
-		user : process.env.POSTGRES_USER,
-		password : process.env.POSTGRES_PASSWORD,
-		database : process.env.POSTGRES_DB
+		port : POSTGRES_DB_PORT,
+		user : POSTGRES_USER,
+		password : POSTGRES_PASSWORD,
+		database : POSTGRES_DB
 	}
-  });
+});
 
 const app = express();
 
-const PORT = 3001;
+const PORT = 8000;
 
 const db = {
 	users: [
@@ -59,7 +59,14 @@ app.use(cors());
 
 //HOME ROUTE
 app.get('/', (req, res) => {
-	res.send(db.users);
+	knex.select('*')
+		.from('users')
+		.then(users => {
+			res.send(users);
+		})
+		.catch(err => {
+			res.status(400).json('Error Fetching Users');
+		})
 })
 
 //USER SIGN IN ROUTE
@@ -82,32 +89,35 @@ app.post('/signin', (req, res) => {
 //REGISTER USER ROUTE
 app.post('/register', (req, res) => {
 	const { name, email, password } = req.body;
-	let userExist = false;
-	let newUser;
+	const saltRounds = 10;
 
-	db.users.map((user) => {
-		if(user.email === email) {
-			userExist = true;
-			res.status(404).json('User already exists!')
-		}
-	})
-
-	if(!userExist) {
+	const hash = bcrypt.hashSync(password, saltRounds);
 	
-		db.users.push({
-			id: db.users.length + 1,
-			name: name,
-			email: email,
-			password: password,
-			entries: 0,
-			followers: [],
-			joined: new Date(),
-		});
-
-		newUser = db.users[db.users.length - 1]
-
-		res.send(newUser)
-	}
+	knex.transaction(trx => {
+		trx('login')
+			.insert({
+				email: email,
+				hash: hash
+			})
+			.returning('email')
+			.then(loginEmail => {
+				return trx.insert({
+						email: loginEmail[0].email,
+						name: name,
+						joined: new Date()
+					})
+					.into('users')
+					.returning('*')
+					.then(user => {
+						res.send(user[0]);
+					})
+			})
+			.then(trx.commit)
+			.then(trx.rollback)
+	})
+	.catch(err => {
+		res.status(400).json('Unable to register');
+	})
 })
 
 
