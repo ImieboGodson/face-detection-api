@@ -1,24 +1,23 @@
 const express = require('express');
 const cors = require('cors');
-const knex = require('knex');
 const dotenv = require('dotenv').config();
 
+const { POSTGRES_DB_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB } = process.env;
 
-
-const database = knex({
+const knex = require('knex')({
 	client: 'pg',
 	connection: {
 		host : '127.0.0.1',
-		port : process.env.POSTGRES_DB_PORT,
-		user : process.env.POSTGRES_USER,
-		password : process.env.POSTGRES_PASSWORD,
-		database : process.env.POSTGRES_DB
+		port : POSTGRES_DB_PORT,
+		user : POSTGRES_USER,
+		password : POSTGRES_PASSWORD,
+		database : POSTGRES_DB
 	}
-  });
+});
 
 const app = express();
 
-const PORT = 3001;
+const PORT = 8000;
 
 const db = {
 	users: [
@@ -59,7 +58,14 @@ app.use(cors());
 
 //HOME ROUTE
 app.get('/', (req, res) => {
-	res.send(db.users);
+	knex.select('*')
+		.from('users')
+		.then(users => {
+			res.send(users);
+		})
+		.catch(err => {
+			res.status(400).json('Error Fetching Users');
+		})
 })
 
 //USER SIGN IN ROUTE
