@@ -20,38 +20,6 @@ const app = express();
 
 const PORT = 8000;
 
-const db = {
-	users: [
-		{
-			id: "1",
-			name: 'Jefferson Grey',
-			email: 'jeff@sample.com',
-			password: 'beans',
-			entries: 5,
-			followers: [ 002, 003 ],
-			joined: new Date(),
-		},
-		{
-			id: '2',
-			name: 'Adewale James',
-			email: 'adewale@sample.com',
-			password: 'rice',
-			entries: 3,
-			followers: [ 001 ],
-			joined: new Date(),
-		},
-		{
-			id: '3',
-			name: 'Kaleb Jones',
-			email: 'jones@sample.com',
-			password: 'cats',
-			entries: 3,
-			followers: [ 001, 002 ],
-			joined: new Date(),
-		},
-	]
-}
-
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 app.use(cors());
@@ -70,27 +38,39 @@ app.get('/', (req, res) => {
 })
 
 //USER SIGN IN ROUTE
-app.post('/signin', (req, res) => {
+app.post('/login', (req, res) => {
 	const { email, password } = req.body;
-	let foundUser = false;
-
-	db.users.map((user) => {
-		if(user.email === email && user.password === password) {
-			foundUser = true;
-			res.status(200).json(user);
-		}
-	})
-
-	if(!foundUser) {
-		res.status(400).json('User not found!');
-	}
+	
+	knex.select('email', 'hash')
+		.from('login')
+		.where('email', '=', email)
+		.returning('*')
+		.then(data => {
+			const isValid = bcrypt.compareSync(password, data[0].hash);
+			if(isValid) {
+				return knex.select('*')
+					.from('users')
+					.where('email', '=', data[0].email)
+					.returning('*')
+					.then(user => {
+						res.send(user[0]);
+					})
+					.catch(err => {
+						res.status(400).json('Error fetching user data');
+					})
+			} else {
+				res.status(400).json('Invalid Credentials');
+			}
+		})
+		.catch(err => {
+			res.status(400).json('Error Logging In');
+		})
 })
 
 //REGISTER USER ROUTE
 app.post('/register', (req, res) => {
 	const { name, email, password } = req.body;
 	const saltRounds = 10;
-
 	const hash = bcrypt.hashSync(password, saltRounds);
 	
 	knex.transaction(trx => {
@@ -109,11 +89,21 @@ app.post('/register', (req, res) => {
 					.into('users')
 					.returning('*')
 					.then(user => {
-						res.send(user[0]);
+						if(user.length) {
+							res.send(user[0]);
+						} else {
+							res.status(400).json('Error Fetching User');
+						}
+					})
+					.catch(err => {
+						res.status(400).json('Error Registering User');
 					})
 			})
 			.then(trx.commit)
 			.then(trx.rollback)
+			.catch(err => {
+				res.status(400).json('Error Registering User');
+			})
 	})
 	.catch(err => {
 		res.status(400).json('Unable to register');
