@@ -112,21 +112,24 @@ app.post('/register', (req, res) => {
 
 
 //UPDATE USER ENTRIES
-app.put('/entries', (req, res) => {
+app.put('/image', (req, res) => {
 	const { id } = req.body;
-	let foundUser = false;
-
-	db.users.map((user) => {
-		if(user.id === id) {
-			foundUser = true;
-			user.entries += 1;
-			res.send(user);
-		}
-	})
-
-	if(!foundUser) {
-		res.status(404).json('Unauthorized Update!');
-	}
+	
+	knex.select('*')
+		.from('users')
+		.where('id', '=', id)
+		.increment('entries', 1)
+		.returning('entries')
+		.then(entries => {
+			if(entries.length) {
+				res.send(entries[0].entries);
+			} else {
+				res.status(400).json('Error Updating User Entries');
+			}
+		})
+		.catch(err => {
+			res.status(400).json('Error Updating User Entries');
+		})
 })
 
 
