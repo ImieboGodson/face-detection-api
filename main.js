@@ -135,18 +135,21 @@ app.put('/image', (req, res) => {
 
 app.get('/profile/:id', (req, res) => {
 	const { id } = req.params;
-	let foundUser = false;
-
-	db.users.map((user) => {
-		if(user.id === id) {
-			foundUser = true;
-			res.send(user);
-		}
-	})
-
-	if(!foundUser) {
-		res.status(400).json('user not found!');
-	}
+	
+	knex.select('*')
+		.from('users')
+		.where('id', '=', id)
+		.returning('*')
+		.then(user => {
+			if(user.length) {
+				res.send(user[0]);
+			} else {
+				res.status(400).json('Error fetching user data');
+			}
+		})
+		.catch(err => {
+			res.status(400).json('User Not Found');
+		})
 })
 
 
