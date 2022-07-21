@@ -31,20 +31,10 @@ app.use(express.json());
 app.use(cors());
 
 
-//HOME ROUTE
 app.get('/', users.handleGetUsers(knex));
-
-//USER SIGN IN ROUTE
 app.post('/login', login.handleUserLogin(knex, bcrypt));
-
-//REGISTER USER ROUTE
 app.post('/register', register.handleRegisterUser(knex, bcrypt));
-
-
-//UPDATE USER ENTRIES
 app.put('/image', image.handleImageEntry(knex));
-
-
 app.get('/profile/:id', profile.handleGetUserProfile(knex));
 
 
