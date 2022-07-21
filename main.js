@@ -4,6 +4,10 @@ const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 const register = require('./controllers/register');
+const login = require('./controllers/login');
+const image = require('./controllers/image');
+const profile = require('./controllers/profile');
+const users = require('./controllers/users');
 
 const { POSTGRES_DB_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB } = process.env;
 
@@ -28,91 +32,20 @@ app.use(cors());
 
 
 //HOME ROUTE
-app.get('/', (req, res) => {
-	knex.select('*')
-		.from('users')
-		.then(users => {
-			res.send(users);
-		})
-		.catch(err => {
-			res.status(400).json('Error Fetching Users');
-		})
-})
+app.get('/', users.handleGetUsers(knex));
 
 //USER SIGN IN ROUTE
-app.post('/login', (req, res) => {
-	const { email, password } = req.body;
-	
-	knex.select('email', 'hash')
-		.from('login')
-		.where('email', '=', email)
-		.returning('*')
-		.then(data => {
-			const isValid = bcrypt.compareSync(password, data[0].hash);
-			if(isValid) {
-				return knex.select('*')
-					.from('users')
-					.where('email', '=', data[0].email)
-					.returning('*')
-					.then(user => {
-						res.send(user[0]);
-					})
-					.catch(err => {
-						res.status(400).json('Error fetching user data');
-					})
-			} else {
-				res.status(400).json('Invalid Credentials');
-			}
-		})
-		.catch(err => {
-			res.status(400).json('Error Logging In');
-		})
-})
+app.post('/login', login.handleUserLogin(knex, bcrypt));
 
 //REGISTER USER ROUTE
 app.post('/register', register.handleRegisterUser(knex, bcrypt));
 
 
 //UPDATE USER ENTRIES
-app.put('/image', (req, res) => {
-	const { id } = req.body;
-	
-	knex.select('*')
-		.from('users')
-		.where('id', '=', id)
-		.increment('entries', 1)
-		.returning('entries')
-		.then(entries => {
-			if(entries.length) {
-				res.send(entries[0].entries);
-			} else {
-				res.status(400).json('Error Updating User Entries');
-			}
-		})
-		.catch(err => {
-			res.status(400).json('Error Updating User Entries');
-		})
-})
+app.put('/image', image.handleImageEntry(knex));
 
 
-app.get('/profile/:id', (req, res) => {
-	const { id } = req.params;
-	
-	knex.select('*')
-		.from('users')
-		.where('id', '=', id)
-		.returning('*')
-		.then(user => {
-			if(user.length) {
-				res.send(user[0]);
-			} else {
-				res.status(400).json('Error fetching user data');
-			}
-		})
-		.catch(err => {
-			res.status(400).json('User Not Found');
-		})
-})
+app.get('/profile/:id', profile.handleGetUserProfile(knex));
 
 
 
