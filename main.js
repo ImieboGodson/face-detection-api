@@ -1,7 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
-const dotenv = require('dotenv').config();
+require('dotenv').config();
+
+const register = require('./controllers/register');
 
 const { POSTGRES_DB_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB } = process.env;
 
@@ -68,47 +70,7 @@ app.post('/login', (req, res) => {
 })
 
 //REGISTER USER ROUTE
-app.post('/register', (req, res) => {
-	const { name, email, password } = req.body;
-	const saltRounds = 10;
-	const hash = bcrypt.hashSync(password, saltRounds);
-	
-	knex.transaction(trx => {
-		trx('login')
-			.insert({
-				email: email,
-				hash: hash
-			})
-			.returning('email')
-			.then(loginEmail => {
-				return trx.insert({
-						email: loginEmail[0].email,
-						name: name,
-						joined: new Date()
-					})
-					.into('users')
-					.returning('*')
-					.then(user => {
-						if(user.length) {
-							res.send(user[0]);
-						} else {
-							res.status(400).json('Error Fetching User');
-						}
-					})
-					.catch(err => {
-						res.status(400).json('Error Registering User');
-					})
-			})
-			.then(trx.commit)
-			.then(trx.rollback)
-			.catch(err => {
-				res.status(400).json('Error Registering User');
-			})
-	})
-	.catch(err => {
-		res.status(400).json('Unable to register');
-	})
-})
+app.post('/register', register.handleRegisterUser(knex, bcrypt));
 
 
 //UPDATE USER ENTRIES
