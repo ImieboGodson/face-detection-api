@@ -33,8 +33,9 @@ app.use(cors());
 app.get('/', profile.handleGetAllUsersProfile(knex));
 app.post('/login', login.handleUserLogin(knex, bcrypt));
 app.post('/register', register.handleRegisterUser(knex, bcrypt));
-app.put('/image', image.handleImageEntry(knex));
 app.get('/profile/:id', profile.handleGetUserProfile(knex));
+app.put('/image', image.handleImageEntry(knex));
+app.post('/image_data', image.handleApiCall());
 
 
 
