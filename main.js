@@ -7,7 +7,6 @@ const register = require('./controllers/register');
 const login = require('./controllers/login');
 const image = require('./controllers/image');
 const profile = require('./controllers/profile');
-const users = require('./controllers/users');
 
 const { POSTGRES_DB_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB } = process.env;
 
@@ -31,7 +30,7 @@ app.use(express.json());
 app.use(cors());
 
 
-app.get('/', users.handleGetUsers(knex));
+app.get('/', profile.handleGetAllUsersProfile(knex));
 app.post('/login', login.handleUserLogin(knex, bcrypt));
 app.post('/register', register.handleRegisterUser(knex, bcrypt));
 app.put('/image', image.handleImageEntry(knex));
