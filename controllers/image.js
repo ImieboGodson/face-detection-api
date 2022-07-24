@@ -12,7 +12,7 @@ const handleApiCall = () => (req, res) => {
 			res.send(data);
 		})
 		.catch(err => {
-			res.status(400).json('Error fetching image data');
+			res.status(400).json('Error Fetching Image Data');
 		})
 }
 
