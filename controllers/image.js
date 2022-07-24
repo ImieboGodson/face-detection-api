@@ -1,3 +1,23 @@
+const Clarifai = require('clarifai');
+
+const app = new Clarifai.App({
+	apiKey: process.env.API_KEY
+});
+
+const handleApiCall = () => (req, res) => {
+	const { input } = req.body;
+
+	app.models.predict (Clarifai.FACE_DETECT_MODEL, input)
+		.then(data => {
+			res.send(data);
+		})
+		.catch(err => {
+			res.status(400).json('Error Fetching Image Data');
+		})
+}
+
+
+
 const handleImageEntry = (knex) => (req, res) => {
 	const { id } = req.body;
 	
@@ -19,5 +39,6 @@ const handleImageEntry = (knex) => (req, res) => {
 }
 
 module.exports = {
-    handleImageEntry
+    handleImageEntry,
+	handleApiCall
 }
