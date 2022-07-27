@@ -1,7 +1,10 @@
 const handleUserLogin = (knex, bcrypt) => (req, res) => {
 	const { email, password } = req.body;
 	
-	knex.select('email', 'hash')
+	if(email === '' || password === '') {
+		res.status(400).json("You Can't Leave Input Fields Empty");
+	} else {
+		knex.select('email', 'hash')
 		.from('login')
 		.where('email', '=', email)
 		.returning('*')
@@ -25,6 +28,8 @@ const handleUserLogin = (knex, bcrypt) => (req, res) => {
 		.catch(err => {
 			res.status(400).json('Error Logging In');
 		})
+	}
+	
 }
 
 module.exports = {
