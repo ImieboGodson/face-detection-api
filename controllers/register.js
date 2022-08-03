@@ -2,8 +2,9 @@ const handleRegisterUser = (knex, bcrypt) => (req, res) => {
 	const { name, email, password } = req.body;
 	const saltRounds = 10;
 	const hash = bcrypt.hashSync(password, saltRounds);
+	console.log(hash);
 	
-	if (name === '' || email === '' || password === '' ) {
+	if (!name || !email || !password ) {
 		res.status(400).json("You Can't Leave Input Fields Empty");
 	} else {
 		knex.transaction(trx => {
