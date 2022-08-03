@@ -7,7 +7,7 @@ metadata.set("authorization", `Key ${process.env.API_KEY}`);
 
 const handleApiCall = () => (req, res) => {
 	const { input } = req.body;
-	if(input === '') {
+	if(!input) {
 		res.status(400).json('Input Field is Empty');
 	} else {
 		stub.PostModelOutputs(
