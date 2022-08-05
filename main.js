@@ -23,7 +23,7 @@ const knex = require('knex')({
 
 const app = express();
 
-const PORT = 8000;
+const PORT = process.env.PORT || 3005;
 
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
