@@ -30,7 +30,8 @@ app.use(express.json());
 app.use(cors());
 
 
-app.get('/', profile.handleGetAllUsersProfile(knex));
+// app.get('/', profile.handleGetAllUsersProfile(knex));
+app.get('/', (req, res ) => { res.send("I am Alive!")});
 app.post('/login', login.handleUserLogin(knex, bcrypt));
 app.post('/register', register.handleRegisterUser(knex, bcrypt));
 app.get('/profile/:id', profile.handleGetUserProfile(knex));
