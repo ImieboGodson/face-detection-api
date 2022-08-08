@@ -13,11 +13,10 @@ const { POSTGRES_DB_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB } = proc
 const knex = require('knex')({
 	client: 'pg',
 	connection: {
-		host : '127.0.0.1',
-		port : POSTGRES_DB_PORT,
-		user : POSTGRES_USER,
-		password : POSTGRES_PASSWORD,
-		database : POSTGRES_DB
+		connectionString: process.env.DATABASE_URL,
+		ssl: {
+			rejectUnauthorized: false
+		}
 	}
 });
 
