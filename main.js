@@ -8,7 +8,6 @@ const login = require('./controllers/login');
 const image = require('./controllers/image');
 const profile = require('./controllers/profile');
 
-const { POSTGRES_DB_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB } = process.env;
 
 const knex = require('knex')({
 	client: 'pg',
